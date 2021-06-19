@@ -1,4 +1,5 @@
 #!/bin/bash
+../cd
 max_keep_count=$(../getconfig max_keep_count)
 backup_dir=$(../getconfig backup_dir)
 count=$(../utils/ossgbc)

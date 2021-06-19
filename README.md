@@ -43,4 +43,76 @@
 
 ### ECS 上的准备工作
 
-TBC
+ECS 创建后，在开始搭建服务器之前，需要首先确保数据安全，部署自动备份等。首先 `clone` 本项目。
+
+```bash
+git clone https://github.com/Subilan/oss.git
+```
+
+把它放在一个方便的位置。然后修改配置文件
+
+```bash
+cd oss
+vim config
+```
+配置文件如下
+
+```bash
+# 最大备份数
+max_keep_count=5
+# 备份所在 OSS 地址，末尾不要带斜杠
+backup_dir=oss://storage/backup
+# 备份所在本地地址，末尾不要带斜杠
+backup_local_dir=/path/to/your/server
+```
+
+- **最大备份数** 可以把你的备份数量控制在该范围之内。填写 5 则代表不超过 5 个备份。当第 6 个备份产生时，前五个备份中存在时间最久的（即最先备份的）一个会被删除。其它数据以此类推，它可以将备份数量维持在*最近 n 个*。
+- **备份所在 OSS 地址** 是指你所要备份到的地址。格式为 `oss://[bukkit 名]/文件夹路径`。末尾不要带斜杠，否则会出现问题。
+- **备份所在本地地址** 是指你所要备份的目录的本地地址。该目录应该是你的服务器的主目录。
+
+之后修改 OSS 的配置文件
+
+```bash
+cd utils
+mv oss-config.cfg.example oss-config.cfg
+vim oss-config.cfg
+```
+
+配置文件如下
+
+```conf
+[Credentials]
+language=CH
+accessKeyID=
+accessKeySecret=
+endpoint=
+```
+
+其中，`accessKeyID` 和 `accessKeySecret` 为 OSS 的编程访问 ID 和密钥，你可以在阿里云账户的 RAM 控制台里创建这两个信息。`endpoint` 是 OSS 的地域节点，你可以在 OSS 管理页面查看。请确保 `endpoint` 项内含有「internal」字样，确保为内网访问。
+
+![](https://i.loli.net/2021/06/20/Wy67Raq9hNPzxcu.png)
+
+上述信息填写完毕以后，将 `backup/backup` 加入到 crontab 的任务中即可。
+
+```bash
+crontab -e
+```
+
+任务可以这样写
+
+```crontab
+*/10 * * * * /path/to/backup
+# /path/to/backup 是指向 backup 脚本的路径，该脚本位于本项目的 backup 目录下
+```
+
+意思是每 10 分钟备份一次。关于更多 crontab 语法，可参考 [Crontab Guru](https://crontab.guru/)。
+
+完成上面的步骤以后，不出意外已经可以开始准备 Minecraft 服务器了，一切按正常流程走即可。每次备份时，`backup` 会将指定的文件夹（`config` 中的 `backup_local_dir`）复制到指定的位置（`config` 中的 `backup_dir`）下的一个命名为复制的时间（格式：`%Y-%m-%d_%H:%M:%S`）的文件夹，且由于走的是内网，速度非常快（可以自己试一下），因此大存档也并没有太大问题。
+
+## 免责声明
+
+抢占式实例被自动释放后，所有数据均无法找回。因此，请尽可能保证账户余额充足、出价策略正确且选择到了市场价较为稳定的区域和规格。本项目配置以后，如果不能正常运作，请及时修复并对数据进行备份。任何问题都可以在 Issue 中反馈。本项目不对任何损失负责。
+
+## 协议
+
+MIT

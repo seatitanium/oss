@@ -1,0 +1,4 @@
+#!/bin/bash
+
+backup_dir=$(../getconfig backup_dir)
+./oss rm --recursive $backup_dir/$*

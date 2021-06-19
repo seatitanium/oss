@@ -1,0 +1,2 @@
+#!/bin/bash
+./ossutil --config-file ./oss-config.cfg $*

@@ -1,0 +1,2 @@
+#!/bin/bash
+./osscp --recursive $1 $2

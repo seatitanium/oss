@@ -1,0 +1,3 @@
+#!/bin/bash
+name=$1
+echo `sed '/^$name=/!d;s/.*='// config`

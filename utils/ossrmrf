@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./oss rm --recursive $*

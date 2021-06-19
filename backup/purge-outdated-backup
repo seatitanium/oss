@@ -1,0 +1,20 @@
+#!/bin/bash
+max_keep_count=$(../getconfig max_keep_count)
+backup_dir=$(../getconfig backup_dir)
+count=$(../utils/ossgbc)
+backups=$(../utils/ossls $backup_dir -d | grep oss://)
+if [[ $max_keep_count < 0 ]];
+then
+	echo bad max_keep_count
+	exit
+fi
+if [[ $count -gt $max_keep_count || $count == $max_keep_count ]];
+then
+	array=(${backups//\n/ })
+	len=${#array[@]}
+	endp=$(expr $len - 4)
+	for e in $(seq 1 $endp)
+        do
+                ../utils/ossrmrf "${array[$e]}" --force
+        done
+fi

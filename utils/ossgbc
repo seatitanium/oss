@@ -1,0 +1,4 @@
+#!/bin/bash
+
+backup_dir=$(../getconfig backup_dir)
+echo $(./ossls $backup_dir/ -d | grep oss:// | wc -l) 

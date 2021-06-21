@@ -1,8 +1,8 @@
 #!/bin/bash
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$parent_path"
-backup_dir=$(../getconfig backup_dir)
-backup_local_dir=$(../getconfig backup_local_dir)
+backup_dir=$(sed '/^backup_dir=/!d;s/.*='// config)
+backup_local_dir=$(sed '/^backup_local_dir=/!d;s/.*='// config)
 time=$(date "+%Y-%m-%d_%H:%M:%S")
 ./purge-outdated-backup
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin

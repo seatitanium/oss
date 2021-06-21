@@ -1,5 +1,6 @@
 #!/bin/bash
-../cd
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
 backup_dir=$(../getconfig backup_dir)
 backup_local_dir=$(../getconfig backup_local_dir)
 time=$(date "+%Y-%m-%d_%H:%M:%S")

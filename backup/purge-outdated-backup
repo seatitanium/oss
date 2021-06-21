@@ -1,5 +1,6 @@
 #!/bin/bash
-../cd
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
 max_keep_count=$(../getconfig max_keep_count)
 backup_dir=$(../getconfig backup_dir)
 count=$(../utils/ossgbc)

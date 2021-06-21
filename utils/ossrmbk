@@ -1,4 +1,5 @@
 #!/bin/bash
-../cd
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
 backup_dir=$(../getconfig backup_dir)
 ./oss rm --recursive $backup_dir/$*

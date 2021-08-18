@@ -2,7 +2,7 @@
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$parent_path"
 max_keep_count=$(sed '/^max_keep_count=/!d;s/.*='// ../config)
-backup_dir=$(sed '/^backup_dir=/!d;s/.*='// ../config)
+backup_dir=$(sed '/^backup_dir=/!d;s/.*='// ../config)/
 count=$(../utils/ossgbc)
 backups=$(../utils/ossls $backup_dir -d | grep oss://)
 if [[ $max_keep_count < 0 ]];

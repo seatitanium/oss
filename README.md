@@ -84,10 +84,10 @@ endpoint=
 - `backup` — 包含与备份相关的脚本
 - `utils` — 包含访问 OSS 相关的脚本
 
-<p align='center'><b>utils 内脚本用途</b></p>
+**utils 内脚本用途**
 
 |名称|介绍|
-|:-:|:-:|
+|:-:|:-|
 |`ossutil`|由阿里云官方提供的 `ossutil` 可执行文件|
 |`oss`|用于带上当前的配置文件调用 `ossutil`|
 |`osscp`|用法：`osscp ...args`，用于从 OSS 上复制文件到本地|
@@ -103,10 +103,10 @@ endpoint=
 2. `LocalDir` 可用相对路径或者绝对路径
 3. 若要调用 `utils` 文件夹下除了 `ossrmrf` 和 `ossutil` 以外的文件，必须先切换到 `utils` 目录
 
-<p align='center'><b>backup 内脚本用途</b></p>
+**backup 内脚本用途**
 
 |名称|介绍|
-|:-:|:-:|
+|:-:|:-|
 |`backup`|用于进行备份，应放在 crontab 中执行|
 |`purge-outdated-backup`|用于删除超出限定的备份数量的备份|
 

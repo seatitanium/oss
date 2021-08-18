@@ -1,118 +1,121 @@
 # oss
 
-本项目介绍使用阿里云 ECS 抢占式实例开启 Minecraft 服务器的基本实现方法以及相关工具的简单实现。
+本项目提供了用于访问 Aliyun OSS 的一些工具和自动备份的简单解决方案，基于阿里云官方的 [ossutil](https://github.com/aliyun/ossutil)。有关 Minecraft 在阿里云抢占式实例上的开服实践的相关介绍，可以阅读[这篇文档](./implementation.md)。
 
-## 介绍
+## 快速开始
 
-我们通常以包月方式购买阿里云 ECS，对于轻度用户来说，这也许有些过于昂贵且没必要。因为很多时候，这买来的一个月里并没有多少玩家参与游戏，导致资源被大幅度浪费，甚至最后「人财两空」。如果既想要较为稳定方便的服务商，又不希望浪费资源，则可以考虑使用阿里云 ECS 提供的**抢占式实例**。抢占式实例具有以下基本特点：
+在开始之前，你需要准备
+- 一组具有所需权限（可以是 `AliyunOSSFullAccess`）的 AccessKeyId 和 AccessKeySecret
+- 一个已经创建好的**与你的实例在相同地域的**阿里云 OSS Bucket
 
-### 较为优惠的计费模式
+1. 下载本项目
 
-抢占式实例是按秒计费的。在初次购买时，价格会显示一个小时的价格。在流量方面，既可以选择按量计费，也可以按带宽计费。实例持有阶段将持续计费，实例释放后立刻停止计费。因此，这能够有效帮助我们节省成本，任何时候只要不需要开服（人太少等因素造成），都可以直接释放实例，防止损失。同时，流量方面也可以在人少的时候减少支出（选择按量计费）。
-
-粗略来看，较低配置（但足够开 Minecraft 服务器）的抢占式实例每小时的价格是等规格按量付费实例价格的 10%（一折后价格），配置越高此折扣越低。
-
-### 较为特殊的生命周期
-
-抢占式实例在创建时可选择保护期：无确定保护期和一个小时保护期。对于一个小时保护期，在创建以后的一个小时里，你的实例不会被释放。而在这一个小时以后，每五分钟将根据该规格的库存以及市场价等因素来决定是否释放你的实例。实例被释放后，所有的数据将无法恢复。若选无确定保护期，则在创建以后就直接进入这种状态。
-
-有关更多抢占式实例的描述信息，可以参考[官方文档](https://help.aliyun.com/document_detail/52088.html)。
-
-## 开服的基本实现
-
-要使用抢占式实例开服，首先要确保的是服务器的数据安全。根据阿里云官方描述，抢占式实例适用于无状态应用程序，因为会被释放并摧毁数据。如果你需要高配机来一次性地试着跑一些东西，用抢占式实例再好不过（就相当于是掏了不到一块钱或者一块钱左右把高配机租来用一下）。而对于 Minecraft 服务器这种有状态应用程序，似乎就不太适合。但是我们选择抢占式实例最主要的原因之一是，它的释放率并不高，一般在 1% ~ 3% 左右。如果地区选择得当，出价方式正确，基本上不会被释放。而且，我们将使用脚本来实现定时备份，即使被释放，数据也是安全的。
-
-我们将用到以下阿里云产品：
-
-- 阿里云 ECS 的抢占式实例
-- 阿里云 OSS
-
-其中 ECS 用来开服，OSS 用来存储我们的数据。这样计算下来，成本远低于包月付费的 ECS。ECS 的费用，以 `ecs.g5.xlarge` 规格（4 核 16G 通用型）为例，据不完全估计，每个月的花费在 ￥234 左右。而同规格在包月条件下，花费为 ￥530。OSS 的费用可参考[这里](https://cn.aliyun.com/price/detail/oss)，并不会太高，且内、外网流入和内网流出流量均为免费。*数据时间：`2021/06/19`*
-
-下面将粗略描述整个过程。
-
-### 创建 ECS 和 OSS
-
-此过程将不多赘述。创建 ECS 时，选择抢占式实例，根据需要选择相应的区域、配置即可。
-
-![](https://i.loli.net/2021/06/19/vlStxYXFwysAkVg.png)
-
-在 ECS 表格中值得参考的数据是释放率和历史折扣率。
-
-创建 OSS 时，**必须确保 OSS 的地域与 ECS 完全相同，否则传输速率慢且需要额外付费。** 例如 ECS 选择的是华北 2 上海，则 OSS 也必须选择华北 2 上海。
-
-### ECS 上的准备工作
-
-ECS 创建后，在开始搭建服务器之前，需要首先确保数据安全，部署自动备份等。首先 `clone` 本项目。
-
-```bash
-git clone https://github.com/Subilan/oss.git
-```
-
-把它放在一个方便的位置。然后修改配置文件
-
-```bash
+```sh
+git clone https://github.com/seatidemc/oss.git
 cd oss
+```
+
+2. 给予权限
+
+```sh
+chmod +x backup/* utils/*
+```
+
+3. 编辑配置文件。只有正确配置才能正常使用功能。为了避免意外，请阅读[配置文件解读](#配置文件解读)部分。
+
+```sh
+mv config.example config
 vim config
-```
-配置文件如下
 
-```bash
-# 最大备份数
-max_keep_count=5
-# 备份所在 OSS 地址，末尾不要带斜杠
-backup_dir=oss://storage/backup
-# 备份所在本地地址，末尾不要带斜杠
-backup_local_dir=/path/to/your/server
-```
-
-- **最大备份数** 可以把你的备份数量控制在该范围之内。填写 5 则代表不超过 5 个备份。当第 6 个备份产生时，前五个备份中存在时间最久的（即最先备份的）一个会被删除。其它数据以此类推，它可以将备份数量维持在*最近 n 个*。
-- **备份所在 OSS 地址** 是指你所要备份到的地址。格式为 `oss://[bukkit 名]/文件夹路径`。末尾不要带斜杠，否则会出现问题。
-- **备份所在本地地址** 是指你所要备份的目录的本地地址。该目录应该是你的服务器的主目录。
-
-之后修改 OSS 的配置文件
-
-```bash
 cd utils
 mv oss-config.cfg.example oss-config.cfg
 vim oss-config.cfg
 ```
 
-配置文件如下
+4. 若要启用自动备份，请将 `backup` 添加到 crontab 中，具体运行周期可自定
+
+```sh
+crontab -e
+```
+
+```sh
+# crontab 的内容
+*/10 * * * * /path/to/backup
+```
+
+**注意：** 正式启用前，请自行测试一遍脚本和 crontab 任务是否可用，避免不必要的损失。如果一切准备就绪，脚本则开始运行。每次备份时，`backup` 脚本会将指定的文件夹（`config` 中的 `backup_local_dir`）复制到指定的位置（`config` 中的 `backup_dir`）下的一个命名为复制的时间（格式：`年-月-日_时:分:秒`）的文件夹。由于走的是内网，速度非常快（可以自己试一下），即使是大存档也没问题。
+
+## 配置文件解读
+
+1. `config`
+
+```
+# 最大备份数
+max_keep_count=5
+# 备份所在 OSS 地址，末尾不要带斜杠
+backup_dir=
+# 备份所在本地地址，末尾不要带斜杠
+backup_local_dir=
+```
+
+- 最大备份数 — 允许在 OSS 上存在的最大备份数，**必须为正整数才能生效**
+- 备份所在 OSS 地址 — 设置在 OSS 上的备份地址。格式为 `oss://<Bucket 名称>/<具体路径...>`
+  - 例如如果要备份到 `example` 这个 bucket 里的 `/backups` 目录，那么就填 `oss://example/backups`
+- 备份所在本地地址 — 设置要备份的本地地址。**必须是绝对路径**
+  - 例如要备份 `/my-server` 这个目录，那么就填 `/my-server`
+
+2. `oss-config.cfg`
 
 ```conf
 [Credentials]
-language=CH
+lang=ZH
 accessKeyID=
 accessKeySecret=
 endpoint=
 ```
 
-其中，`accessKeyID` 和 `accessKeySecret` 为 OSS 的编程访问 ID 和密钥，你可以在阿里云账户的 RAM 控制台里创建这两个信息。`endpoint` 是 OSS 的地域节点，你可以在 OSS 管理页面查看。请确保 `endpoint` 项内含有「internal」字样，确保为内网访问。
+- `accessKeyID` — 填写生成的 AccessKeyId
+- `accessKeySecret` — 填写生成的 AccessKeySecret
+- `endpoint` — 填写**要备份到的 Bucket 的 `endpoint`**
+  - `endpoint` 的值可以在 Bucket 的「概览」面板看到：![](https://i.loli.net/2021/06/20/Wy67Raq9hNPzxcu.png) 请确保使用地址中含有 `internal` 字样，否则传输将耗费大量时间。
 
-![](https://i.loli.net/2021/06/20/Wy67Raq9hNPzxcu.png)
+## 项目结构
 
-上述信息填写完毕以后，将 `backup/backup` 加入到 crontab 的任务中即可。
+- `backup` — 包含与备份相关的脚本
+- `utils` — 包含访问 OSS 相关的脚本
 
-```bash
-crontab -e
-```
+<p align='center'><b>utils 内脚本用途</b></p>
 
-任务可以这样写
+|名称|介绍|
+|:-:|:-:|
+|`ossutil`|由阿里云官方提供的 `ossutil` 可执行文件|
+|`oss`|用于带上当前的配置文件调用 `ossutil`|
+|`osscp`|用法：`osscp ...args`，用于从 OSS 上复制文件到本地|
+|`ossdl`|用法：`ossdl RemoteDir LocalDir`，用于从 OSS 上下载文件或者文件夹到本地|
+|`ossgbc`|`gbc`=`getbackupcount`，用于获取当前备份的数量|
+|`ossls`|用法：`ossls ...args`，用于列出 OSS 上的目录结构|
+|`ossrmbk`|用法：`ossrmbk ...Name`，用于删除 OSS 上的某一备份，`Name` 处填写该备份的文件夹名称|
+|`ossrmrf`|用法：`ossrmrf ...Name`，用于删除 OSS 上的文件夹或文件。**执行时不会询问是否继续。**|
+|`ossul`|用法：`ossul LocalDir RemoteDir`，用于将本地的文件或者文件夹上传到 OSS 上的指定位置|
 
-```crontab
-*/10 * * * * /path/to/backup
-# /path/to/backup 是指向 backup 脚本的路径，该脚本位于本项目的 backup 目录下
-```
+注：
+1. `RemoteDir` 的写法为 `oss://<Bucket 名称>/<具体路径...>`
+2. `LocalDir` 可用相对路径或者绝对路径
+3. 若要调用 `utils` 文件夹下除了 `ossrmrf` 和 `ossutil` 以外的文件，必须先切换到 `utils` 目录
 
-意思是每 10 分钟备份一次。关于更多 crontab 语法，可参考 [Crontab Guru](https://crontab.guru/)。
+<p align='center'><b>backup 内脚本用途</b></p>
 
-完成上面的步骤以后，不出意外已经可以开始准备 Minecraft 服务器了，一切按正常流程走即可。每次备份时，`backup` 会将指定的文件夹（`config` 中的 `backup_local_dir`）复制到指定的位置（`config` 中的 `backup_dir`）下的一个命名为复制的时间（格式：`%Y-%m-%d_%H:%M:%S`）的文件夹，且由于走的是内网，速度非常快（可以自己试一下），因此大存档也并没有太大问题。
+|名称|介绍|
+|:-:|:-:|
+|`backup`|用于进行备份，应放在 crontab 中执行|
+|`purge-outdated-backup`|用于删除超出限定的备份数量的备份|
 
-## 免责声明
-
-抢占式实例被自动释放后，所有数据均无法找回。因此，请尽可能保证账户余额充足、出价策略正确且选择到了市场价较为稳定的区域和规格。本项目配置以后，如果不能正常运作，请及时修复并对数据进行备份。任何问题都可以在 Issue 中反馈。本项目不对任何损失负责。
+注：
+1. 若要让 `purge-outdated-backup` 正常工作，OSS 上的备份地址内不应有**任何人工创建的文件夹**，否则会导致删除顺序错误
+2. 请确保权限设置正确（`755`），在加入 crontab 前应先测试一次，然后再测试一次 crontab，否则可能造成备份失效但未及时察觉导致数据损失的事故
 
 ## 协议
 
 MIT
+
+注：`ossutil` 本身也是 MIT 协议开源的。

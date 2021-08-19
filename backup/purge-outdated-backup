@@ -14,8 +14,8 @@ if [[ $count -gt $max_keep_count || $count == $max_keep_count ]];
 then
 	array=(${backups//\n/ })
 	len=${#array[@]}
-	endp=$(expr $len - 4)
-	for e in $(seq 1 $endp)
+	endp=$(expr $len - 5)
+	for e in $(seq 0 $endp)
         do
                 ../utils/ossrmrf "${array[$e]}" --force
         done

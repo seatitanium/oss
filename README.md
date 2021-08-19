@@ -68,7 +68,7 @@ backup_local_dir=
 
 ```conf
 [Credentials]
-lang=ZH
+lang=CH
 accessKeyID=
 accessKeySecret=
 endpoint=

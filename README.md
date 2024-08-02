@@ -7,16 +7,13 @@
 > [!NOTE]  
 > 在开始之前，你需要准备
 > - ossutil 本体
+> 可通过下列指令
+>  ```sh
+> sudo -v ; curl https://gosspublic.alicdn.com/ossutil/install.sh | sudo bash
+> ```
+> 后执行 `ossutil config` 根据提示输入相应的参数可以快速生成配置文件，或者按照[配置文件解读](#配置文件解读)部分所述手动编写配置文件。
 > - 一组具有所需权限（例如 `AliyunOSSFullAccess`）的 AccessKeyId 和 AccessKeySecret
 > - 一个已经创建好的**与你的实例在相同地域的**阿里云 OSS Bucket
-
-0. 安装并配置 ossutil
-
-```sh
-sudo -v ; curl https://gosspublic.alicdn.com/ossutil/install.sh | sudo bash
-```
-
-后执行 `ossutil config` 根据提示输入相应的参数可以快速生成配置文件，或者按照[配置文件解读](#配置文件解读)部分所述手动编写配置文件。
 
 1. 下载本项目
 

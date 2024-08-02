@@ -1,5 +1,3 @@
 #!/bin/bash
-parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-cd "$parent_path"
-backup_dir=$(sed '/^backup_dir=/!d;s/.*='// ../config)
-echo $(./ossls $backup_dir/ -d | grep oss:// | wc -l) 
+backup_remote_dir=$(sed '/^backup_remote_dir=/!d;s/.*='// ../config)
+echo $(./ossls $backup_remote_dir/ -d | grep oss:// | wc -l) 

@@ -1,0 +1,3 @@
+#!/bin/bash
+backup_remote_dir=$(sed '/^backup_remote_dir=/!d;s/.*='// ../config)
+./ossrmrf $backup_remote_dir/$*

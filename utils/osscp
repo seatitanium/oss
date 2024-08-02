@@ -1,2 +1,2 @@
 #!/bin/bash
-./oss cp $*
+ossutil cp --recursive $1 $2

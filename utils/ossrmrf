@@ -1,5 +1,2 @@
 #!/bin/bash
-parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-cd "$parent_path"
-
-yes | ./oss rm --recursive $*
+yes | ossutil rm --recursive --force $*

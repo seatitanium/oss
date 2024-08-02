@@ -42,7 +42,7 @@ vim config
 即可开始使用。
 
 - `oss cp x y` 将 x 传输到 y
-- `oss ls x` *remote-only* 列出远程目录下的文件。默认是列出所有的子目录和文件，添加参数 `-d` 可只列出当前目录下的文件和子目录，注意此时的 `x` 必须是以 `/` 结尾的。
+- `oss ls x` *remote-only* 列出远程目录下的文件。默认是递归（recursive）列出。添加参数 `-d` 可只列出指定目录下的文件和子目录，注意此时的 `x` 必须是以 `/` 结尾的。
 - `oss get-backup-count` *argumentless* 获取现存备份数量
   - **别名** `gbc`
 - `oss rmrf x` *remote-only* 删除远程目录下的文件或者目录

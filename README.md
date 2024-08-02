@@ -7,7 +7,8 @@
 > [!NOTE]  
 > 在开始之前，你需要准备
 > - ossutil 本体
-> 可通过下列指令
+> 
+> 可通过下列指令安装
 >  ```sh
 > sudo -v ; curl https://gosspublic.alicdn.com/ossutil/install.sh | sudo bash
 > ```

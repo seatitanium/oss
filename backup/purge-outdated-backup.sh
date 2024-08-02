@@ -1,8 +1,8 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
-max_keep_count=$(sed '/^max_keep_count=/!d;s/.*='// ../config)
-backup_remote_dir=$(sed '/^backup_remote_dir=/!d;s/.*='// ../config)
+max_keep_count=$(sed '/^max_keep_count=/!d;s/.*='// ../oss.ini)
+backup_remote_dir=$(sed '/^backup_remote_dir=/!d;s/.*='// ../oss.ini)
 count=$(../utils/ossgbc)
 backups=$(../utils/ossls $backup_remote_dir/ -d | grep $backup_remote_dir/2)
 if [[ $max_keep_count < 0 ]];

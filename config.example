@@ -1,6 +1,0 @@
-# 最大备份数
-max_keep_count=5
-# 备份所在 OSS 地址，末尾不要带斜杠
-backup_remote_dir=
-# 备份所在本地地址，末尾不要带斜杠
-backup_local_dir=

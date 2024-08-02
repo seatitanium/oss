@@ -33,8 +33,7 @@ chmod +x backup/* utils/*
 3. 编辑配置文件。只有正确配置才能正常使用功能。为了避免意外，请阅读[配置文件解读](#配置文件解读)部分。
 
 ```sh
-mv config.example config
-vim config
+vim oss.ini
 ```
 
 即可开始使用。

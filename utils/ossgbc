@@ -1,3 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")"
+
 backup_remote_dir=$(sed '/^backup_remote_dir=/!d;s/.*='// ../oss.ini)
 echo $(./ossls $backup_remote_dir/ -d | grep oss:// | wc -l) 
